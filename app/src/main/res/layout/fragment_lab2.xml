@@ -31,8 +31,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/countData"
         android:layout_gravity="center_horizontal"
-        android:text="100"
         android:textSize="20dp"
-        />
+        android:text="0"/>
 </LinearLayout>
 </ScrollView>

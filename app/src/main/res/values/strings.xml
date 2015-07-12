@@ -1,5 +1,29 @@
 <resources>
-    <string name="app_name">Lab1.1</string>
+    <string name="app_name">Lab2</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string-array name="options">
+        <item>Z threshold</item>
+        <item>Linear motion</item>
+        <item>Displacement</item>
+    </string-array>
+    <string-array name="options1">
+        <item>Z threshold</item>
+        <item>Linear motion</item>
+    </string-array>
+    <string-array name="optionsLab4">
+        <item>Z threshold</item>
+        <item>Linear motion</item>
+        <item>Displacement</item>
+        <item>Maps</item>
+    </string-array>
+    <string-array name="mapsLabel">
+        <item>E2-3344</item>
+        <item>Lab-room-peninsula</item>
+        <item>Lab-room</item>
+    </string-array>
+    <string name="title_activity_main">155 Lab</string>
+    <string name="title_activity_lab3">Lab3Activity</string>
+    <string name="title_activity_lab">Lab3</string>
+    <string name="title_activity_lab4">Lab4Activity</string>
 </resources>
