@@ -29,7 +29,7 @@
         <activity
             android:name=".MainActivity"
             android:label="@string/title_activity_main"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait" >
         </activity>
         <activity
             android:name=".Lab3Activity"
@@ -44,13 +44,17 @@
                 android:value="com.example.oliverng.labDev.MainActivity" />
         </activity>
         <activity
-            android:screenOrientation="portrait"
             android:name=".Lab4Activity"
             android:label="@string/title_activity_lab4"
-            android:parentActivityName=".MainActivity" >
+            android:parentActivityName=".MainActivity"
+            android:screenOrientation="portrait" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.oliverng.labDev.MainActivity" />
+        </activity>
+        <activity
+            android:name=".ActivityTest"
+            android:label="@string/title_activity_activity_test" >
         </activity>
     </application>
 

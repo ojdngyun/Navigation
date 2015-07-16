@@ -64,7 +64,7 @@ public class NavigationalMap
     {
         List<InterceptPoint> ret = new ArrayList<InterceptPoint>();
         LineSegment query = new LineSegment(start, end);
-        
+        List<List<PointF>> list = getPaths();
         for(List<PointF> path : getPaths()){
             for(int i = 0; i < path.size() - 1; i++){
                 LineSegment segm = new LineSegment(path.get(i), path.get(i+1));

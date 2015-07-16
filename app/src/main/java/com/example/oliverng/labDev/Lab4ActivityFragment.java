@@ -27,11 +27,14 @@ import android.widget.NumberPicker;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.oliverng.labDev.mapper.MapLoader;
 import com.example.oliverng.labDev.mapper.MapView;
 import com.example.oliverng.labDev.mapper.NavigationalMap;
+import com.example.oliverng.labDev.mapper.PositionListener;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -41,8 +44,20 @@ import java.util.HashMap;
  */
 public class Lab4ActivityFragment extends Fragment {
 
-    private static HashMap<Integer, String> maps = new HashMap<>();
+    private static final HashMap<Integer, String> maps = new HashMap<>();
 
+    Boolean isOriginDestinationValid = false;
+    PointF nextOrigin;
+    PointF nextDestination;
+    PointF origin;
+    PointF destination;
+    NavigationalMap mNavigationalMap = new NavigationalMap();
+    PointF startingNode;
+    PointF endingNode;
+
+    PointF[] route1;
+    PointF[] route2;
+    PointF[] route3;
     MapView mapView;
     SensorManager sensorManager;
     Sensor linearAccelerationSensor, accelerometerSensor, magneticSensor;
@@ -64,10 +79,16 @@ public class Lab4ActivityFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_lab4, container, false);
-        //initialization of hashMap
+
+        //initialization of hashMap of map
         maps.put(0, "E2-3344.svg");
         maps.put(1, "Lab-room-peninsula.svg");
         maps.put(2, "Lab-room.svg");
+
+        //initialization of checkpoints
+        route1 = addCheckPoints(CoordinatesConstant.route1X, CoordinatesConstant.route1Y);
+        route2 = addCheckPoints(CoordinatesConstant.route2X, CoordinatesConstant.route2Y);
+        route3 = addCheckPoints(CoordinatesConstant.route3X, CoordinatesConstant.route3Y);
 
         //gets the screen width so that the graph adjusts on screen rotation
         Display display = getActivity().getWindowManager().getDefaultDisplay();
@@ -75,18 +96,36 @@ public class Lab4ActivityFragment extends Fragment {
         display.getSize(size);
         mWidth = size.x;
 
-        //mapView initialization /storage/emulated/0/Android/data/com.example.oliverng.labDev/files
+        //mapView initialization
         mapView = new MapView(getActivity(), 1080, 1080, 42, 42);
         registerForContextMenu(mapView);
         mapView.setMap(loadMap(maps.get(0)));
+        mapView.addListener(new PositionListener() {
+            @Override
+            public void originChanged(MapView source, PointF loc) {
+                nextOrigin = loc;
+                isOriginDestinationValid = checkOriginDestination();
+                //Toast.makeText(getActivity(), "x: " + loc.x + " y: " + loc.y, Toast.LENGTH_LONG).show();
+                //Toast.makeText(getActivity(), list.size() + "", Toast.LENGTH_LONG).show();
+                //findPath();
+            }
+
+            @Override
+            public void destinationChanged(MapView source, PointF dest) {
+                nextDestination = dest;
+                isOriginDestinationValid = checkOriginDestination();
+                //findPath();
+            }
+        });
 
         sensorManager = (SensorManager) rootView.getContext().getSystemService(Context.SENSOR_SERVICE);
-        RelativeLayout layout = (RelativeLayout) rootView.findViewById(R.id.layout);
 
+        final RelativeLayout layout = (RelativeLayout) rootView.findViewById(R.id.layout);
         TextView stepCount = (TextView) rootView.findViewById(R.id.countData);
         TextView displacement = (TextView) rootView.findViewById(R.id.displacement);
         TextView bearing = (TextView) rootView.findViewById(R.id.tvHeading);
         ImageView compass = (ImageView) rootView.findViewById(R.id.compassViewActual);
+        ImageView heading = (ImageView) rootView.findViewById(R.id.compassViewDirection);
 
         graphView = new LineGraphView(getActivity(), 100, Arrays.asList("X", "Y", "Z"), mWidth);
 
@@ -121,7 +160,10 @@ public class Lab4ActivityFragment extends Fragment {
                 lYAcceleration,
                 stepInMeters,
                 bearing,
-                compass);
+                compass,
+                heading,
+                mapView,
+                mNavigationalMap);
 
         sensorManager.registerListener(sensorListener,accelerometerSensor, SensorManager.SENSOR_DELAY_GAME);
         sensorManager.registerListener(sensorListener, magneticSensor, SensorManager.SENSOR_DELAY_GAME);
@@ -151,6 +193,9 @@ public class Lab4ActivityFragment extends Fragment {
                 dimension[0] = 1080 * factor;
                 dimension[1] = 1080 * factor;
                 mapView.changeScale(point, dimension);
+                layout.getLayoutParams().height = (int) dimension[1];
+                layout.getLayoutParams().width = (int) dimension[0];
+                layout.requestLayout();
             }
 
             @Override
@@ -167,8 +212,147 @@ public class Lab4ActivityFragment extends Fragment {
         return rootView;
     }
 
+    private boolean checkOriginDestination(){
+        if(nextOrigin == null || nextDestination == null) return false;
+        else{
+            if(findRoute(nextOrigin, nextDestination) == 4){
+                Toast.makeText(getActivity(), "Something is WRONG!", Toast.LENGTH_LONG).show();
+                sensorListener.pathNotValid();
+                return false;
+            }else{
+                origin = new PointF(nextOrigin.x, nextOrigin.y);
+                destination = new PointF(nextDestination.x, nextDestination.y);
+                findPath();
+                return true;
+            }
+        }
+    }
+
+    //get the path from the origin and destination
+    private boolean findPath() {
+        ArrayList<PointF> path = new ArrayList<PointF>();
+        if(origin == null || destination == null)return false;
+        else {
+            if(mNavigationalMap.calculateIntersections(origin, destination).isEmpty()){
+                path.add(origin);
+                path.add(destination);
+                mapView.setUserPath(path);
+                sensorListener.setPath(path);
+                return true;
+            }else{
+                switch(findRoute(origin, destination)){
+                    case 1:
+                        path = getPath(route1);
+                        mapView.setUserPath(path);
+                        sensorListener.setPath(path);
+                        break;
+                    case 2:
+                        path = getPath(route2);
+                        mapView.setUserPath(path);
+                        sensorListener.setPath(path);
+                        break;
+                    case 3:
+                        path = getPath(route3);
+                        mapView.setUserPath(path);
+                        sensorListener.setPath(path);
+                        break;
+                    default:
+                        Toast.makeText(getActivity(), "Choose another origin or destination", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+        }
+        return false;
+    }
+
+    //get the path in route
+    private ArrayList<PointF> getPath(PointF[] points){
+        ArrayList<PointF> path = new ArrayList<PointF>();
+        int startingIndex = getIndex(points, startingNode);
+        int endingIndex = getIndex(points, endingNode);
+        path.add(origin);
+        if(startingIndex < endingIndex) {
+            for (int i = startingIndex; i <= endingIndex; i++) {
+                path.add(points[i]);
+            }
+        }else{
+            for(int i = startingIndex; i >= endingIndex; i--){
+                path.add(points[i]);
+            }
+        }
+        path.add(destination);
+        return path;
+    }
+
+    //gets the index of the PointF in an array of PointF
+    private int getIndex(PointF[] points, PointF point){
+        for(int i = 0; i < points.length; i++){
+            if(point.x == points[i].x && point.y == points[i].y){
+                return i;
+            }
+        }
+        return 0;
+    }
+
+    //finds the route and the starting and ending node in the route
+    private int findRoute(PointF origin, PointF destination){
+        PointF originRoute1 = findClosestNode(origin, route1);
+        PointF originRoute2 = findClosestNode(origin, route2);
+        PointF originRoute3 = findClosestNode(origin, route3);
+        PointF destinationRoute1 = findClosestNode(destination, route1);
+        PointF destinationRoute2 = findClosestNode(destination, route2);
+        PointF destinationRoute3 = findClosestNode(destination, route3);
+        if(mNavigationalMap.calculateIntersections(origin, originRoute1).isEmpty() &&
+                mNavigationalMap.calculateIntersections(destination, destinationRoute1).isEmpty()){
+            startingNode = originRoute1;
+            endingNode = destinationRoute1;
+            return 1;
+        }else if(mNavigationalMap.calculateIntersections(origin, originRoute2).isEmpty() &&
+                mNavigationalMap.calculateIntersections(destination, destinationRoute2).isEmpty()){
+            startingNode = originRoute2;
+            endingNode = destinationRoute2;
+            return 2;
+        }else if(mNavigationalMap.calculateIntersections(origin, originRoute3).isEmpty() &&
+                mNavigationalMap.calculateIntersections(destination, destinationRoute3).isEmpty()){
+            startingNode = originRoute3;
+            endingNode = destinationRoute3;
+            return 3;
+        }else{
+            return 4;
+        }
+    }
+
+    //finds the closest node to point in array of nodes
+    private PointF findClosestNode(PointF point, PointF[] points){
+        PointF currentPoint = points[1];
+        for(int i = 0; i < points.length; i++){
+            if(distanceBetweenPoints(point, currentPoint) > distanceBetweenPoints(point, points[i])){
+                currentPoint = points[i];
+            }
+        }
+        return currentPoint;
+    }
+
+    //finds the distance between 2 PointF
+    private double distanceBetweenPoints(PointF one, PointF two){
+        return Math.sqrt(Math.pow((one.x - two.x), 2) + Math.pow((one.y - two.y), 2));
+    }
+
+
+
+    //used for the initialization of the
+    private PointF[] addCheckPoints(int[] routeX, int[] routeY) {
+        int length = routeX.length;
+        PointF[] points = new PointF[length];
+        for(int i = 0; i < length; i++) {
+            points[i] = new PointF(routeX[i], routeY[i]);
+        }
+        return points;
+    }
+
     private NavigationalMap loadMap(String s) {
-        return MapLoader.loadMap(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), s);
+        mNavigationalMap = MapLoader.loadMap(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), s);
+        return mNavigationalMap;
     }
 
     @Override
@@ -254,11 +438,11 @@ public class Lab4ActivityFragment extends Fragment {
 //                        mapView.changeScale(new PointF(80, 80));
                         break;
                     case 1:
-                        mapView.setMap(loadMap(maps.get(1)));
+                        //mapView.setMap(loadMap(maps.get(1)));
 //                        mapView.changeScale(new PointF(100, 100));
                         break;
                     case 2:
-                        mapView.setMap(loadMap(maps.get(2)));
+                        //mapView.setMap(loadMap(maps.get(2)));
 //                        mapView.changeScale(new PointF(100, 100));
                         break;
                 }

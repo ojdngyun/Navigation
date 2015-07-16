@@ -26,4 +26,5 @@
     <string name="title_activity_lab3">Lab3Activity</string>
     <string name="title_activity_lab">Lab3</string>
     <string name="title_activity_lab4">Lab4Activity</string>
+    <string name="title_activity_activity_test">ActivityTest</string>
 </resources>

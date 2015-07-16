@@ -98,16 +98,18 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/horizontalScrollView"
+                android:fillViewport="true"
                 android:layout_below="@+id/zoomSeekBar">
 
                 <ScrollView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:id="@+id/scrollView2">
+                    android:fillViewport="true"
+                    android:id="@+id/verticalScrollView">
 
                     <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
                         android:layout_below="@+id/displacement"
                         android:id="@+id/layout">
                     </RelativeLayout>
