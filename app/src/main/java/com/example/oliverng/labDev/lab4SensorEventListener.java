@@ -136,8 +136,8 @@ class lab4SensorEventListener implements SensorEventListener {
                 //
                 if(isValidPath){
                     RotateAnimation anim = new RotateAnimation(
-                            (360 - angleHeading[0]) - 180,
-                            (360 - angleHeading[1]) - 180,
+                            (360 - angleHeading[0]),
+                            (360 - angleHeading[1]),
                             Animation.RELATIVE_TO_SELF, 0.5f,
                             Animation.RELATIVE_TO_SELF, 0.5f
                     );
@@ -289,18 +289,25 @@ class lab4SensorEventListener implements SensorEventListener {
 
     private boolean displacement(){
         correctedAngle = (float) Math.toRadians(90) - degree;
-        double Ndistance = Math.round(Math.sin(correctedAngle) * 100);
-        double Edistance = Math.round(Math.cos(correctedAngle) * 100);
+        double Ndistance = Math.round(Math.sin(correctedAngle - Math.toRadians(30)) * 100);
+        double Edistance = Math.round(Math.cos(correctedAngle - Math.toRadians(30)) * 100);
         PointF p = new PointF(path.get(userIndex).x, path.get(userIndex).y);
         if(checkPoints(p.x += (float) (stepInMeters * (Edistance / 100)),
+
+
                 p.y += -((float) ((stepInMeters) * (Ndistance / 100))),
-                path.get(userIndex + 1).x, path.get(userIndex + 1).y)) {
+
+
+                path.get(userIndex + 1).x,
+
+                path.get(userIndex + 1).y)) {
+
             northDistance += stepInMeters * (Ndistance / 100);
             eastDistance += stepInMeters * (Edistance / 100);
             path.get(userIndex).x += (float) (stepInMeters * (Edistance / 100));
             path.get(userIndex).y += -((float) ((stepInMeters) * (Ndistance / 100)));
             mapView.setUserPoint(path.get(userIndex).x, path.get(userIndex).y);
-            if(VectorUtils.distance(path.get(userIndex), path.get(userIndex + 1)) < 0.5){
+            if(VectorUtils.distance(path.get(userIndex), path.get(userIndex + 1)) < 1.2){
                 if((path.size() - userIndex) == 2){
                     AlertDialog.Builder builder = new AlertDialog.Builder(mContext)
                             .setTitle("Announcement to the User!")
@@ -317,6 +324,44 @@ class lab4SensorEventListener implements SensorEventListener {
             return true;
         }else return false;
     }
+
+//    private boolean displacement(){
+//        correctedAngle = (float) Math.toRadians(90) - degree;
+//        double Ndistance = Math.round(Math.sin(correctedAngle) * 100);
+//        double Edistance = Math.round(Math.cos(correctedAngle) * 100);
+//        PointF p = new PointF(path.get(userIndex).x, path.get(userIndex).y);
+//        if(checkPoints(p.x += ((float) ((stepInMeters * (Edistance / 100)) * Math.sin(Math.toDegrees(60)))) + ((float) ((stepInMeters) * (Ndistance / 100)) * Math.sin(Math.toDegrees(30)))  ,
+//
+//
+//                p.y += ((float) ((stepInMeters * (Edistance / 100)) * Math.cos(Math.toDegrees(60)))) - ((float) ((stepInMeters) * (Ndistance / 100)) * Math.cos(Math.toDegrees(30))),
+//
+//
+//                path.get(userIndex + 1).x,
+//
+//                path.get(userIndex + 1).y)) {
+//
+//            northDistance += stepInMeters * (Ndistance / 100);
+//            eastDistance += stepInMeters * (Edistance / 100);
+//            path.get(userIndex).x += ((float) ((stepInMeters * (Edistance / 100)) * Math.sin(Math.toDegrees(60)))) + ((float) ((stepInMeters) * (Ndistance / 100)) * Math.sin(Math.toDegrees(30)));
+//            path.get(userIndex).y += ((float) ((stepInMeters * (Edistance / 100)) * Math.cos(Math.toDegrees(60)))) - ((float) ((stepInMeters) * (Ndistance / 100)) * Math.cos(Math.toDegrees(30)));
+//            mapView.setUserPoint(path.get(userIndex).x, path.get(userIndex).y);
+//            if(VectorUtils.distance(path.get(userIndex), path.get(userIndex + 1)) < 0.8){
+//                if((path.size() - userIndex) == 2){
+//                    AlertDialog.Builder builder = new AlertDialog.Builder(mContext)
+//                            .setTitle("Announcement to the User!")
+//                            .setMessage("Destination Reached!")
+//                            .setPositiveButton("OK", null);
+//
+//                    AlertDialog dialog = builder.create();
+//                    dialog.show();
+//                    isValidPath = false;
+//                }else {
+//                    userIndex++;
+//                }
+//            }
+//            return true;
+//        }else return false;
+//    }
 
     private boolean checkPoints(float x1, float y1, float x2, float y2){
         if(mNavigationalMap.calculateIntersections(new PointF(x1, y1), new PointF(x2, y2)).isEmpty()){

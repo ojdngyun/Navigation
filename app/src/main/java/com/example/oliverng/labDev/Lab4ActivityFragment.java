@@ -217,6 +217,12 @@ public class Lab4ActivityFragment extends Fragment {
         else{
             if(findRoute(nextOrigin, nextDestination) == 4){
                 Toast.makeText(getActivity(), "Something is WRONG!", Toast.LENGTH_LONG).show();
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity())
+                        .setTitle("Error!")
+                        .setMessage("Choose another origin or destination point!")
+                        .setPositiveButton("OK", null);
+                AlertDialog dialog = builder.create();
+                dialog.show();
                 sensorListener.pathNotValid();
                 return false;
             }else{

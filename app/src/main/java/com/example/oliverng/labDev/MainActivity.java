@@ -49,7 +49,7 @@ public class MainActivity extends ActionBarActivity {
 
             }
         };
-        getWindow().getEnterTransition().addListener(mEnterTransitionListener);
+        //getWindow().getEnterTransition().addListener(mEnterTransitionListener);
         setContentView(R.layout.activity_main);
         lab1Button = (Button) findViewById(R.id.lab1Button);
         lab2Button = (Button) findViewById(R.id.lab2Button);
@@ -82,7 +82,7 @@ public class MainActivity extends ActionBarActivity {
 
             @Override
             public void onAnimationEnd(Animator animator) {
-                getWindow().getEnterTransition().removeListener(mEnterTransitionListener);
+                //getWindow().getEnterTransition().removeListener(mEnterTransitionListener);
             }
 
             @Override
